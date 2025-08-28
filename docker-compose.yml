@@ -1,0 +1,76 @@
+version: "3"
+services:
+  emqx1:
+    image: emqx/emqx:5.1.2
+    container_name: emqx1
+    env_file:
+      - ${ENV_FILE}
+    environment:
+      EMQX_NAME: emqx1
+      EMQX_HOST: emqx1
+      EMQX_CLUSTER__K8S__DISCOVERY: static
+      EMQX_CLUSTER__K8S__STATIC__SEEDS: emqx1@emqx1,emqx2@emqx2,emqx3@emqx3
+    ports:
+      - "1883:1883"
+      - "8883:8883"
+      - "18083:18083"
+    volumes:
+      - emqx1-data:/opt/emqx/data
+      - emqx1-etc:/opt/emqx/etc
+      - emqx1-log:/opt/emqx/log
+      - ./emqx_config/emqx_bridge_kafka.conf:/opt/emqx/etc/emqx_bridge_kafka.conf:ro
+
+    entrypoint: /bin/sh -c "envsubst < /opt/emqx/etc/emqx_bridge_kafka.conf.template > /opt/emqx/etc/emqx_bridge_kafka.conf && exec /opt/emqx/bin/emqx start"
+
+  emqx2:
+    image: emqx/emqx:5.1.2
+    container_name: emqx2
+    env_file:
+      - ${ENV_FILE}
+    environment:
+      EMQX_NAME: emqx2
+      EMQX_HOST: emqx2
+      EMQX_CLUSTER__K8S__DISCOVERY: static
+      EMQX_CLUSTER__K8S__STATIC__SEEDS: emqx1@emqx1,emqx2@emqx2,emqx3@emqx3
+    ports:
+      - "1884:1883"
+      - "8884:8883"
+      - "18084:18083"
+    volumes:
+      - emqx2-data:/opt/emqx/data
+      - emqx2-etc:/opt/emqx/etc
+      - emqx2-log:/opt/emqx/log
+      - ./emqx_config/emqx_bridge_kafka.conf.template:/opt/emqx/etc/emqx_bridge_kafka.conf.template:ro
+    entrypoint: /bin/sh -c "envsubst < /opt/emqx/etc/emqx_bridge_kafka.conf.template > /opt/emqx/etc/emqx_bridge_kafka.conf && exec /opt/emqx/bin/emqx start"
+
+  emqx3:
+    image: emqx/emqx:5.1.2
+    container_name: emqx3
+    env_file:
+      - ${ENV_FILE}
+    environment:
+      EMQX_NAME: emqx3
+      EMQX_HOST: emqx3
+      EMQX_CLUSTER__K8S__DISCOVERY: static
+      EMQX_CLUSTER__K8S__STATIC__SEEDS: emqx1@emqx1,emqx2@emqx2,emqx3@emqx3
+    ports:
+      - "1885:1883"
+      - "8885:8883"
+      - "18085:18083"
+    volumes:
+      - emqx3-data:/opt/emqx/data
+      - emqx3-etc:/opt/emqx/etc
+      - emqx3-log:/opt/emqx/log
+      - ./emqx_config/emqx_bridge_kafka.conf.template:/opt/emqx/etc/emqx_bridge_kafka.conf.template:ro
+    entrypoint: /bin/sh -c "envsubst < /opt/emqx/etc/emqx_bridge_kafka.conf.template > /opt/emqx/etc/emqx_bridge_kafka.conf && exec /opt/emqx/bin/emqx start"
+
+volumes:
+  emqx1-data:
+  emqx1-etc:
+  emqx1-log:
+  emqx2-data:
+  emqx2-etc:
+  emqx2-log:
+  emqx3-data:
+  emqx3-etc:
+  emqx3-log:
